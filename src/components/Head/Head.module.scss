@@ -1,0 +1,36 @@
+.container {
+    display: flex;
+    justify-content: center;
+    background-color: #fff;
+    width: 100%;
+    position: absolute;
+    left: 0;
+    .wrapper {
+        display: flex;
+        height: 60px;
+        width: 100%;
+        max-width: 1200px;
+        justify-content: space-between;
+        align-items: center;
+        // background-color: #fff;
+        .wrapper__logo {
+            width: 144px;
+            height: 36px;
+        }
+        .wrapper__buttons {
+            font-size: 1rem;
+            display: flex;
+            flex-direction: row;
+            column-gap: 10px;
+            .wrapper__buttons__btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100px;
+                height: 34px;
+                background-color: #f4e041;
+                border-radius: 80px;
+            }
+        }
+    }
+}

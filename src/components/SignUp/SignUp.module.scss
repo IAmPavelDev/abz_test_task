@@ -1,0 +1,133 @@
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    margin: 140px auto 0 auto;
+    p {
+        font-size: 40px;
+        margin: 0 16px;
+        text-align: center;
+    }
+    .wrapper__form {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        margin: 0 16px;
+        input {
+            max-width: 380px;
+            width: 80%;
+            height: 54px;
+            border: 1px solid #d0cfcf;
+            border-radius: 4px;
+            margin: 50px auto 0 auto;
+            font-size: 16px;
+            line-height: 26px;
+            color: #7e7e7e;
+            padding: 0 16px;
+        }
+        label {
+            font-size: 12px;
+            line-height: 14px;
+            color: #7e7e7e;
+            margin: 4px auto 0 50px;
+        }
+    }
+    .wrapper__select {
+        display: flex;
+        flex-direction: column;
+        margin: 25px auto 0 50px;
+        p {
+            font-size: 1rem;
+            line-height: 26px;
+            color: rgba(0, 0, 0, 0.87);
+        }
+        input[type="radio"] {
+            height: 20px;
+            width: 20px;
+            margin: auto 0;
+        }
+        label {
+            font-size: 1rem;
+            line-height: 26px;
+            color: rgba(0, 0, 0, 0.87);
+        }
+        div {
+            display: flex;
+            flex-direction: row;
+            align-content: center;
+            gap: 12px;
+            margin-top: 7px;
+        }
+    }
+    .wrapper__photo {
+        display: flex;
+        margin: 100px auto 0 auto;
+        max-width: 380px;
+        width: 80%;
+        min-height: 54px;
+        border: 1px solid #d0cfcf;
+        border-radius: 4px;
+        color: #7e7e7e;
+        .wrapper__photo__btn {
+            display: flex;
+            border: 1px solid rgba(0, 0, 0, 0.87);
+            border-radius: 4px 0px 0px 4px;
+            cursor: pointer;
+            box-sizing: border-box;
+            width: 83px;
+            label {
+                display: flex;
+                color: black;
+                cursor: pointer;
+                width: 83px;
+                margin: auto;
+                justify-content: center;
+            }
+            input {
+                display: none;
+            }
+        }
+        .wrapper__photo__drag {
+            margin: auto 20px;
+            cursor: default;
+            img {
+                width: 148px;
+                height: 148px;
+            }
+            .wrapper__photo__drag__mask {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                position: absolute;
+                width: 148px;
+                height: 148px;
+                background-color: transparent;
+                color: transparent;
+                transition: all .3s;
+                &:hover {
+                    color: white;
+                    background-color:rgba(0, 0, 0, 0.503);
+                    cursor: pointer;
+                }
+            }
+        }
+    }
+    .wrapper__photo__preview {
+        display: flex;
+        flex-direction: column-reverse;
+        width: fit-content;
+        .wrapper__photo__btn {
+            height: 40px;
+            border-radius: 4px;
+            margin: 0 auto;
+        }
+        .wrapper__photo__drag {
+            margin: 0 auto;
+        }
+    }
+    .wrapper__send {
+        margin: 50px auto 100px auto;
+    }
+    .wrapper__success {
+        margin: 50px auto 160px auto;
+    }
+}
