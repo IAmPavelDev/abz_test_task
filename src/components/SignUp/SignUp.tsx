@@ -4,11 +4,17 @@ import SignUpServer from "../../server/SignUpServer";
 import Button from "../Elements/Button";
 import ImageSuccess from "./../../images/success-image.svg";
 
-const SignUp: FC<{}> = () => {
+const SignUp: FC<{ reference: any }> = ({ reference }) => {
     const [selectedFile, setSelectedFile] = useState<File>();
     const [preview, setPreview] = useState<string>();
     const [isValid, setIsValid] = useState<boolean | undefined>(false);
     const [signedUp, setSignedUp] = useState<boolean>(false);
+    const signComponentRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        reference({ ref: signComponentRef, name: "signComponent" });
+    });
+
     useEffect(() => {
         if (!selectedFile) {
             setPreview(undefined);
@@ -46,7 +52,7 @@ const SignUp: FC<{}> = () => {
 
     function sendData() {
         const result = SignUpServer(buffer);
-        result.then(result => setSignedUp(result?.success || false));
+        result.then((result) => setSignedUp(result?.success || false));
     }
 
     function onDropHandler(_e: React.DragEvent<HTMLDivElement>) {
@@ -57,11 +63,15 @@ const SignUp: FC<{}> = () => {
     }
 
     return (
-        <div className={style.wrapper}>
+        <div ref={signComponentRef} className={style.wrapper}>
             {signedUp ? (
                 <>
                     <p>User successfully registered</p>
-                    <img className={style.wrapper__success} src={ImageSuccess} alt="success"/>
+                    <img
+                        className={style.wrapper__success}
+                        src={ImageSuccess}
+                        alt="success"
+                    />
                 </>
             ) : (
                 <>

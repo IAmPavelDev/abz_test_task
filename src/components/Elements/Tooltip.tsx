@@ -17,6 +17,8 @@ const delay = keyframes`
 const Container = styled.p`
     margin: 0;
     cursor: pointer;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+    -webkit-tap-highlight-color: transparent;
 `;
 const Badge = styled.div`
     height: fit-content;
@@ -30,9 +32,23 @@ const Badge = styled.div`
     position: absolute;
     z-index: 240;
     white-space: nowrap;
+    @media (max-width: 650px) {
+        white-space: normal !important;
+        width: fit-content;
+        max-width: 80vw;
+        word-wrap: break-word;
+        overflow: visible !important;
+        box-sizing: border-box !important;
+        text-overflow: fade;
+    }
     overflow: auto;
-    box-sizing: border-box;
+    /* box-sizing: border-box; */
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+    -webkit-tap-highlight-color: transparent;
     &:hover {
+        display: block;
+    }
+    &:active {
         display: block;
     }
 `;

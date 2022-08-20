@@ -3,7 +3,10 @@ import style from "./Promo.module.scss";
 import backPromo from "./../../images/pexels-alexandr-podvalny-1227513.jpeg";
 import Button from "../Elements/Button";
 
-const Promo: FC<{}> = () => {
+const Promo: FC<{refs: any}> = ({refs}) => {
+    function scrollToSignForm() {
+        refs.signComponent.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
     return (
         <div className={style.wrapper}>
             <div className={style.wrapper__img}></div>
@@ -18,7 +21,9 @@ const Promo: FC<{}> = () => {
                     excited to learn, as the world of Front-End Development
                     keeps evolving.
                 </p>
-                <Button>Sign up</Button>
+                <Button
+                onClick={scrollToSignForm}
+                >Sign up</Button>
             </div>
         </div>
     );

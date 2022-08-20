@@ -6,16 +6,17 @@ import Loader from "../Elements/Loader";
 import { GetUsers } from "../../server/GetUsers";
 import Button from "../Elements/Button";
 
-const Users: FC<{}> = () => {
+const Users: FC<{ reference: any }> = ({ reference }) => {
     const [usersList, setUsersList] = useState<ReactElement[]>([]);
     const [isLoader, setIsLoader] = useState(true);
     const loadedPages = useRef(0);
     const neededPage = useRef(1);
     const maxPossiblePages = useRef(1);
+    const usersComponentRef = useRef(null);
     const actionWidth = () => {
         return window.innerWidth > 900
             ? "desktop"
-            : window.innerWidth <= 900 && window.innerWidth >= 650
+            : window.innerWidth <= 900 && window.innerWidth >= 601
             ? "tablet"
             : "mobile";
     };
@@ -29,6 +30,7 @@ const Users: FC<{}> = () => {
         window.addEventListener("resize", () => {
             setWidthAdaptive(actionWidth);
         });
+        reference({ ref: usersComponentRef, name: "usersComponent" });
     });
 
     async function getListOfUsers(argu: Number) {
@@ -40,7 +42,10 @@ const Users: FC<{}> = () => {
             const buffer: JSX.Element[] = [];
             data.users.forEach((dataObject: userProps) => {
                 buffer.push(
-                    <div key={dataObject.id} className={style.wrapper__users__user}>
+                    <div
+                        key={dataObject.id}
+                        className={style.wrapper__users__user}
+                    >
                         <User
                             name={dataObject.name}
                             phone={dataObject.phone}
@@ -61,7 +66,7 @@ const Users: FC<{}> = () => {
     }
 
     return (
-        <div className={style.wrapper}>
+        <div ref={usersComponentRef} className={style.wrapper}>
             <p>Working with GET request</p>
             {isLoader ? (
                 <Loader />

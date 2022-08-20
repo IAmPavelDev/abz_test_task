@@ -1,8 +1,20 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import style from "./Head.module.scss";
 import logo from "./../../images/logo.svg";
 import Button from "../Elements/Button";
-const Head: FC<{}> = () => {
+const Head: FC<{ refs: any }> = ({ refs }) => {
+    function scrollToSignForm() {
+        refs.signComponent.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+        });
+    }
+    function scrollToUsersForm() {
+        refs.usersComponent.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+        });
+    }
     return (
         <div className={style.container}>
             <div className={style.wrapper}>
@@ -12,8 +24,8 @@ const Head: FC<{}> = () => {
                     alt="logotype"
                 />
                 <div className={style.wrapper__buttons}>
-                    <Button>Users</Button>
-                    <Button>Sign up</Button>
+                    <Button onClick={scrollToUsersForm}>Users</Button>
+                    <Button onClick={scrollToSignForm}>Sign up</Button>
                 </div>
             </div>
         </div>
