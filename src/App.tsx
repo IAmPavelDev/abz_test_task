@@ -8,7 +8,7 @@ import getToken from "./server/GetToken";
 
 const App: FC<{}> = () => {
     const scrollToRefs: { [key: string]: any } = {};
-    const getReference = (ref: { name: any; ref: any }) => {
+    const getReference = (ref: { name: string; ref: any }) => {
         scrollToRefs[ref.name] = ref.ref;
     };
     useEffect(() => {

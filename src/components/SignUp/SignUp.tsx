@@ -1,220 +1,225 @@
-import React, { FC, useEffect, useRef, useState } from "react";
+import React, { FC, useEffect, useReducer, useRef } from "react";
 import style from "./SignUp.module.scss";
 import SignUpServer from "../../server/SignUpServer";
 import Button from "../Elements/Button";
 import ImageSuccess from "./../../images/success-image.svg";
+import UserDataForm from "./UserDataForm";
+import UserPositionForm from "./UserPositionForm";
+import Loader from "./../Elements/Loader";
+import UserImage from "./UserImage";
+
+const initialState: State = {
+    name: "",
+    email: "",
+    phone: "",
+    position: "",
+    photo: "",
+    previewPhoto: "",
+    isValid: false,
+    isSignedUp: false,
+    isLoading: false,
+};
+
+interface State {
+    name: string;
+    email: string;
+    phone: string;
+    position: string;
+    photo: string | Blob;
+    previewPhoto: string;
+    isValid: boolean;
+    isSignedUp: boolean;
+    isLoading: boolean;
+}
+
+type Action =
+    | { type: "checkIsValid" }
+    | { type: "setIsSignedUp"; payload: boolean }
+    | { type: "isLoading"; payload: boolean }
+    | { type: "field"; fieldName: string; payload: string | Blob };
+
+const lightRegexpForPhone: RegExp = new RegExp(/^\+?3?8?\s?\(?(\d+)\)?-?\d{3}-?\d{2}-?\d{2}/g);
+
+const Validator: (data: string | boolean | Blob, type: string) => boolean = (
+    data: string | boolean | Blob,
+    type: string
+) => {
+    if (typeof data === "string") {
+        if (type === "phone") {
+            console.log(data);
+            const result = lightRegexpForPhone.test(data);
+            console.log(result);
+            return !result;
+        }
+        if (type === "email") {
+            return /[@]/.test(data);
+        }
+        if (type === "name") {
+            return !/\d/.test(data);
+        }
+    }
+    return true;
+};
+
+function formReducer(state: State, action: Action) {
+    switch (action.type) {
+        case "field": {
+            return {
+                ...state,
+                [action.fieldName]: action.payload,
+            };
+        }
+        case "checkIsValid": {
+            let key: keyof typeof state;
+            for (key in state) {
+                if (
+                    state[key] === "" ||
+                    state[key] === undefined ||
+                    !Validator(state[key], key)
+                ) {
+                    return { ...state, isValid: false };
+                }
+            }
+            return { ...state, isValid: true };
+        }
+        case "setIsSignedUp": {
+            return { ...state, setIsSignedUp: action.payload };
+        }
+        case "isLoading": {
+            return { ...state, isLoading: action.payload };
+        }
+        default:
+            return state;
+    }
+}
 
 const SignUp: FC<{ reference: any }> = ({ reference }) => {
-    const [selectedFile, setSelectedFile] = useState<File>();
-    const [preview, setPreview] = useState<string>();
-    const [isValid, setIsValid] = useState<boolean | undefined>(false);
-    const [signedUp, setSignedUp] = useState<boolean>(false);
     const signComponentRef = useRef<HTMLDivElement>(null);
+    const [state, dispatch] = useReducer(formReducer, initialState);
 
     useEffect(() => {
         reference({ ref: signComponentRef, name: "signComponent" });
     });
 
     useEffect(() => {
-        if (!selectedFile) {
-            setPreview(undefined);
-            return;
-        }
-        const objectUrl = URL.createObjectURL(selectedFile);
-        setPreview(objectUrl);
-        return () => URL.revokeObjectURL(objectUrl);
-    }, [selectedFile]);
-
-    const buffer: { [key: string]: string | File } = useRef({
-        name: "",
-        email: "",
-        phone: "",
-        position: "",
-        photo: "",
-    }).current;
-
-    function localSyncData(_e?: React.ChangeEvent<HTMLInputElement>) {
-        if (_e) {
-            if (_e.currentTarget.type === "radio") {
-                buffer[_e.currentTarget.name] = _e.currentTarget.value;
-            } else {
-                _e.preventDefault();
-                buffer[_e.currentTarget.id] = _e.currentTarget.value;
+        if (state.photo) {
+            if (typeof state.photo !== "string") {
+                const objectUrl = URL.createObjectURL(state.photo);
+                dispatch({
+                    type: "field",
+                    fieldName: "previewPhoto",
+                    payload: objectUrl,
+                });
             }
         }
-        setIsValid(true);
-        for (let key in buffer) {
-            if (buffer[key] === "") {
-                setIsValid(false);
+        if (state.photo === "") {
+            dispatch({
+                type: "field",
+                fieldName: "previewPhoto",
+                payload: "",
+            });
+        }
+    }, [state.photo]);
+
+    function textAndSelectAction(_e?: React.ChangeEvent<HTMLInputElement>) {
+        if (_e && "type" in _e.currentTarget) {
+            dispatch({
+                type: "field",
+                fieldName:
+                    _e.currentTarget[
+                        _e.currentTarget.type === "radio" ? "name" : "id"
+                    ],
+                payload: _e.currentTarget.value,
+            });
+        }
+        dispatch({ type: "checkIsValid" });
+    }
+
+    function photoAddAction(
+        _e?: React.DragEvent<HTMLDivElement> | React.FormEvent<HTMLInputElement>
+    ) {
+        if (!_e) {
+            dispatch({
+                type: "field",
+                fieldName: "photo",
+                payload: "",
+            });
+        }
+        if (_e && "dataTransfer" in _e && _e.dataTransfer.files[0]) {
+            const files = _e.dataTransfer.files;
+            dispatch({
+                type: "field",
+                fieldName: "photo",
+                payload: files[0],
+            });
+        }
+        if (_e && "target" in _e) {
+            const target = _e.target as HTMLInputElement;
+            if (target?.files) {
+                dispatch({
+                    type: "field",
+                    fieldName: "photo",
+                    payload: target?.files[0],
+                });
             }
         }
+        dispatch({ type: "checkIsValid" });
     }
 
     function sendData() {
-        const result = SignUpServer(buffer);
-        result.then((result) => setSignedUp(result?.success || false));
-    }
-
-    function onDropHandler(_e: React.DragEvent<HTMLDivElement>) {
-        _e.preventDefault();
-        const files = _e.dataTransfer.files;
-        buffer["photo"] = files[0];
-        setSelectedFile(files[0]);
+        const result = SignUpServer(state);
+        dispatch({ type: "isLoading", payload: true });
+        result
+            .then((result) => {
+                dispatch({
+                    type: "setIsSignedUp",
+                    payload: result?.success || false,
+                });
+            })
+            .then(() => {
+                dispatch({ type: "isLoading", payload: false });
+            });
     }
 
     return (
         <div ref={signComponentRef} className={style.wrapper}>
-            {signedUp ? (
-                <>
-                    <p>User successfully registered</p>
-                    <img
-                        className={style.wrapper__success}
-                        src={ImageSuccess}
-                        alt="success"
-                    />
-                </>
+            {state.isLoading ? (
+                <Loader />
             ) : (
                 <>
-                    <p>Working with POST request</p>
-                    <div className={style.wrapper__form}>
-                        <input
-                            id="name"
-                            className={style.wrapper__form__name}
-                            type="text"
-                            placeholder="Your name"
-                            onChange={(e) => localSyncData(e)}
-                        />
-                        <input
-                            id="email"
-                            className={style.wrapper__form__email}
-                            type="email"
-                            placeholder="Email"
-                            onChange={(e) => localSyncData(e)}
-                        />
-                        <input
-                            id="phone"
-                            className={style.wrapper__form__Phone}
-                            type="tel"
-                            placeholder="Phone"
-                            onChange={(e) => localSyncData(e)}
-                        />
-                        <label htmlFor="phone">+38 (XXX) XXX - XX - XX</label>
-                    </div>
-                    <div className={style.wrapper__select}>
-                        <p>Select your position</p>
-                        <div>
-                            <input
-                                type="radio"
-                                value="Frontend developer"
-                                name="position"
-                                id="FD"
-                                onChange={(e) => localSyncData(e)}
+                    {state.isSignedUp ? (
+                        <>
+                            <p>User successfully registered</p>
+                            <img
+                                className={style.wrapper__success}
+                                src={ImageSuccess}
+                                alt="success"
                             />
-                            <label htmlFor="FD">Frontend developer</label>
-                        </div>
-
-                        <div>
-                            <input
-                                type="radio"
-                                value="Backend developer"
-                                name="position"
-                                id="BD"
-                                onChange={(e) => localSyncData(e)}
+                        </>
+                    ) : (
+                        <>
+                            <p>Working with POST request</p>
+                            <UserDataForm
+                                textAndSelectAction={textAndSelectAction}
                             />
-                            <label htmlFor="BD">Backend developer</label>
-                        </div>
-
-                        <div>
-                            <input
-                                type="radio"
-                                value="Designer"
-                                name="position"
-                                id="Des"
-                                onChange={(e) => localSyncData(e)}
+                            <UserPositionForm
+                                textAndSelectAction={textAndSelectAction}
                             />
-                            <label htmlFor="Des">Designer</label>
-                        </div>
-
-                        <div>
-                            <input
-                                type="radio"
-                                value="QA"
-                                name="position"
-                                id="QA"
-                                onChange={(e) => localSyncData(e)}
+                            <UserImage
+                                state={state}
+                                photoAddAction={photoAddAction}
                             />
-                            <label htmlFor="QA">QA</label>
-                        </div>
-                    </div>
-                    <div
-                        className={
-                            preview
-                                ? style.wrapper__photo__preview +
-                                  " " +
-                                  style.wrapper__photo
-                                : style.wrapper__photo
-                        }
-                    >
-                        <div className={style.wrapper__photo__btn}>
-                            <label htmlFor="inputPhoto">
-                                {preview ? "Change" : "Upload"}
-                            </label>
-                            <input
-                                id="inputPhoto"
-                                type="file"
-                                onInput={(e) => {
-                                    e.preventDefault();
-                                    if (e.currentTarget.files) {
-                                        buffer["photo"] =
-                                            e.currentTarget.files[0];
-                                        setSelectedFile(
-                                            e.currentTarget.files[0]
-                                        );
-                                    }
+                            <Button
+                                className={style.wrapper__send}
+                                disabled={!state.isValid}
+                                onClick={() => {
+                                    if (state.isValid) sendData();
                                 }}
-                                onChange={(e) => localSyncData(e)}
-                            />
-                        </div>
-
-                        <div
-                            onDragStart={(e) => e.preventDefault()}
-                            onDragLeave={(e) => e.preventDefault()}
-                            onDragOver={(e) => e.preventDefault()}
-                            onDrop={(e) => onDropHandler(e)}
-                            className={style.wrapper__photo__drag}
-                            onChange={() => localSyncData()}
-                        >
-                            {preview ? (
-                                <>
-                                    <div
-                                        onClick={() => {
-                                            buffer["photo"] = "";
-                                            setPreview("");
-                                            setSelectedFile(undefined);
-                                            localSyncData();
-                                        }}
-                                        className={
-                                            style.wrapper__photo__drag__mask
-                                        }
-                                    >
-                                        Remove
-                                    </div>
-                                    <img alt="preview" src={preview} />
-                                </>
-                            ) : (
-                                <>Upload your photo</>
-                            )}
-                        </div>
-                    </div>
-                    <Button
-                        className={style.wrapper__send}
-                        disabled={!isValid}
-                        onClick={() => {
-                            if (isValid) sendData();
-                        }}
-                    >
-                        Sign Up
-                    </Button>
+                            >
+                                Sign Up
+                            </Button>
+                        </>
+                    )}
                 </>
             )}
         </div>

@@ -1,27 +1,35 @@
-function SignUpServer(data: { [key: string]: string | File }) {
+function SignUpServer(data: {
+    name: string;
+    email: string;
+    phone: string;
+    position: string;
+    photo: string | Blob;
+}) {
     var formData = new FormData();
     const token = localStorage.getItem("token");
-    formData.append("position_id", '2');
+    formData.append("position_id", "2");
     formData.append("name", data.name);
     formData.append("email", data.email);
     formData.append("phone", data.phone);
     formData.append("photo", data.photo);
     const requestHeaders: HeadersInit = new Headers();
     requestHeaders.set("Token", token ? token : "");
-    return fetch("https://frontend-test-assignment-api.abz.agency/api/v1/users", {
-        method: "POST",
-        body: formData,
-        headers: requestHeaders,
-    })
+    return fetch(
+        "https://frontend-test-assignment-api.abz.agency/api/v1/users",
+        {
+            method: "POST",
+            body: formData,
+            headers: requestHeaders,
+        }
+    )
         .then(function (response) {
             return response.json();
         })
         .then(function (data) {
-            console.log(data);
             if (data.success) {
-                return {"success": true}
+                return { success: true };
             } else {
-                return {"success": false}
+                return { success: false };
             }
         })
         .catch(function (error) {
