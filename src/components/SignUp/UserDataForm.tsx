@@ -1,6 +1,11 @@
 import React from "react";
 import style from "./SignUp.module.scss";
-const UserDataForm: React.FC<{ textAndSelectAction: any }> = ({ textAndSelectAction }) => {
+import { State } from "./SignUp";
+
+const UserDataForm: React.FC<{ state: State; textAndSelectAction: any }> = ({
+    state,
+    textAndSelectAction,
+}) => {
     return (
         <div className={style.wrapper__form}>
             <input
@@ -22,6 +27,7 @@ const UserDataForm: React.FC<{ textAndSelectAction: any }> = ({ textAndSelectAct
                 className={style.wrapper__form__Phone}
                 type="tel"
                 placeholder="Phone"
+                value={state.phone}
                 onChange={(e) => textAndSelectAction(e)}
             />
             <label htmlFor="phone">+38 (XXX) XXX - XX - XX</label>

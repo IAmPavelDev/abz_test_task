@@ -7,6 +7,7 @@ import UserDataForm from "./UserDataForm";
 import UserPositionForm from "./UserPositionForm";
 import Loader from "./../Elements/Loader";
 import UserImage from "./UserImage";
+import { phoneValidator, nameValidator, emailValidator } from "./FormValidator";
 
 const initialState: State = {
     name: "",
@@ -20,7 +21,7 @@ const initialState: State = {
     isLoading: false,
 };
 
-interface State {
+export interface State {
     name: string;
     email: string;
     phone: string;
@@ -38,29 +39,6 @@ type Action =
     | { type: "isLoading"; payload: boolean }
     | { type: "field"; fieldName: string; payload: string | Blob };
 
-const lightRegexpForPhone: RegExp = new RegExp(/^\+?3?8?\s?\(?(\d+)\)?-?\d{3}-?\d{2}-?\d{2}/g);
-
-const Validator: (data: string | boolean | Blob, type: string) => boolean = (
-    data: string | boolean | Blob,
-    type: string
-) => {
-    if (typeof data === "string") {
-        if (type === "phone") {
-            console.log(data);
-            const result = lightRegexpForPhone.test(data);
-            console.log(result);
-            return !result;
-        }
-        if (type === "email") {
-            return /[@]/.test(data);
-        }
-        if (type === "name") {
-            return !/\d/.test(data);
-        }
-    }
-    return true;
-};
-
 function formReducer(state: State, action: Action) {
     switch (action.type) {
         case "field": {
@@ -72,12 +50,37 @@ function formReducer(state: State, action: Action) {
         case "checkIsValid": {
             let key: keyof typeof state;
             for (key in state) {
-                if (
-                    state[key] === "" ||
-                    state[key] === undefined ||
-                    !Validator(state[key], key)
-                ) {
-                    return { ...state, isValid: false };
+                switch (key) {
+                    case "phone": {
+                        if (!phoneValidator(state[key])) {
+                            if (state[key].substring(0, 3) === "380") {
+                                return {
+                                    ...state,
+                                    phone: `+${state[key].substring(0, 2)}(
+                                        ${state[key].substring(2, 5)})-
+                                        ${state[key].substring(5, 8)}-
+                                        ${state[key].substring(8, 10)}-
+                                        ${state[key].substring(10, 12)}
+                                    `,
+                                    isValid: false,
+                                };
+                            }
+                            return { ...state, isValid: false };
+                        }
+                        break;
+                    }
+                    case "email": {
+                        if (!emailValidator(state[key])) {
+                            return { ...state, isValid: false };
+                        }
+                        break;
+                    }
+                    case "name": {
+                        if (!nameValidator(state[key])) {
+                            return { ...state, isValid: false };
+                        }
+                        break;
+                    }
                 }
             }
             return { ...state, isValid: true };
@@ -200,6 +203,7 @@ const SignUp: FC<{ reference: any }> = ({ reference }) => {
                         <>
                             <p>Working with POST request</p>
                             <UserDataForm
+                                state={state}
                                 textAndSelectAction={textAndSelectAction}
                             />
                             <UserPositionForm
