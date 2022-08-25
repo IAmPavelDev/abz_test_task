@@ -7,7 +7,12 @@ import UserDataForm from "./UserDataForm";
 import UserPositionForm from "./UserPositionForm";
 import Loader from "./../Elements/Loader";
 import UserImage from "./UserImage";
-import { phoneValidator, nameValidator, emailValidator } from "./FormValidator";
+import { nameValidator, emailValidator } from "./FormValidator";
+import {
+    formatPhoneNumberIntl,
+    isValidPhoneNumber,
+} from "react-phone-number-input";
+import { Action, State } from "./SignUpTypes";
 
 const initialState: State = {
     name: "",
@@ -17,27 +22,10 @@ const initialState: State = {
     photo: "",
     previewPhoto: "",
     isValid: false,
+    errorFields: [],
     isSignedUp: false,
     isLoading: false,
 };
-
-export interface State {
-    name: string;
-    email: string;
-    phone: string;
-    position: string;
-    photo: string | Blob;
-    previewPhoto: string;
-    isValid: boolean;
-    isSignedUp: boolean;
-    isLoading: boolean;
-}
-
-type Action =
-    | { type: "checkIsValid" }
-    | { type: "setIsSignedUp"; payload: boolean }
-    | { type: "isLoading"; payload: boolean }
-    | { type: "field"; fieldName: string; payload: string | Blob };
 
 function formReducer(state: State, action: Action) {
     switch (action.type) {
@@ -49,41 +37,43 @@ function formReducer(state: State, action: Action) {
         }
         case "checkIsValid": {
             let key: keyof typeof state;
+            const stateChanges: string[] = [];
             for (key in state) {
                 switch (key) {
-                    case "phone": {
-                        if (!phoneValidator(state[key])) {
-                            if (state[key].substring(0, 3) === "380") {
-                                return {
-                                    ...state,
-                                    phone: `+${state[key].substring(0, 2)}(
-                                        ${state[key].substring(2, 5)})-
-                                        ${state[key].substring(5, 8)}-
-                                        ${state[key].substring(8, 10)}-
-                                        ${state[key].substring(10, 12)}
-                                    `,
-                                    isValid: false,
-                                };
-                            }
-                            return { ...state, isValid: false };
-                        }
-                        break;
-                    }
                     case "email": {
                         if (!emailValidator(state[key])) {
-                            return { ...state, isValid: false };
+                            stateChanges.push(key);
                         }
                         break;
                     }
                     case "name": {
                         if (!nameValidator(state[key])) {
-                            return { ...state, isValid: false };
+                            stateChanges.push(key);
                         }
                         break;
                     }
+                    case "phone": {
+                        if (!isValidPhoneNumber(state[key])) {
+                            stateChanges.push(key);
+                        }
+                        break;
+                    }
+                    default: {
+                        if (
+                            state[key] === "" ||
+                            state[key] === undefined ||
+                            state[key] === null
+                        ) {
+                            stateChanges.push(key);
+                        }
+                    }
                 }
             }
-            return { ...state, isValid: true };
+            console.log(stateChanges);
+            if (stateChanges.length) {
+                return { ...state, errorFields: stateChanges, isValid: false };
+            }
+            return { ...state, errorFields: [], isValid: true };
         }
         case "setIsSignedUp": {
             return { ...state, setIsSignedUp: action.payload };
@@ -122,10 +112,11 @@ const SignUp: FC<{ reference: any }> = ({ reference }) => {
                 payload: "",
             });
         }
+        dispatch({ type: "checkIsValid" });
     }, [state.photo]);
 
     function textAndSelectAction(_e?: React.ChangeEvent<HTMLInputElement>) {
-        if (_e && "type" in _e.currentTarget) {
+        if (_e && "type" in _e?.currentTarget) {
             dispatch({
                 type: "field",
                 fieldName:
@@ -133,6 +124,17 @@ const SignUp: FC<{ reference: any }> = ({ reference }) => {
                         _e.currentTarget.type === "radio" ? "name" : "id"
                     ],
                 payload: _e.currentTarget.value,
+            });
+        }
+        dispatch({ type: "checkIsValid" });
+    }
+
+    function addNumberAction(_e?: string) {
+        if (_e) {
+            dispatch({
+                type: "field",
+                fieldName: "phone",
+                payload: formatPhoneNumberIntl(_e).replace(/\s/g, ""),
             });
         }
         dispatch({ type: "checkIsValid" });
@@ -169,19 +171,15 @@ const SignUp: FC<{ reference: any }> = ({ reference }) => {
         dispatch({ type: "checkIsValid" });
     }
 
-    function sendData() {
-        const result = SignUpServer(state);
+    async function sendData() {
         dispatch({ type: "isLoading", payload: true });
-        result
-            .then((result) => {
-                dispatch({
-                    type: "setIsSignedUp",
-                    payload: result?.success || false,
-                });
-            })
-            .then(() => {
-                dispatch({ type: "isLoading", payload: false });
-            });
+        const res: void | {
+            success: boolean;
+        } = await SignUpServer(state);
+        dispatch({ type: "isLoading", payload: false });
+        if (res) {
+            dispatch({ type: "setIsSignedUp", payload: res?.success });
+        }
     }
 
     return (
@@ -205,6 +203,7 @@ const SignUp: FC<{ reference: any }> = ({ reference }) => {
                             <UserDataForm
                                 state={state}
                                 textAndSelectAction={textAndSelectAction}
+                                addNumberAction={addNumberAction}
                             />
                             <UserPositionForm
                                 textAndSelectAction={textAndSelectAction}

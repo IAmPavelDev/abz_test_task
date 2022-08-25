@@ -1,10 +1,6 @@
-function SignUpServer(data: {
-    name: string;
-    email: string;
-    phone: string;
-    position: string;
-    photo: string | Blob;
-}) {
+import { State } from "./../components/SignUp/SignUpTypes";
+
+function SignUpServer(data: State) {
     var formData = new FormData();
     const token = localStorage.getItem("token");
     formData.append("position_id", "2");

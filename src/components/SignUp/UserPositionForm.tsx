@@ -1,6 +1,8 @@
 import React from "react";
 import style from "./SignUp.module.scss";
-const UserPositionForm: React.FC<{ textAndSelectAction: any}> = ({ textAndSelectAction}) => {
+const UserPositionForm: React.FC<{
+    textAndSelectAction: (_e?: React.ChangeEvent<HTMLInputElement>) => void;
+}> = ({ textAndSelectAction }) => {
     return (
         <div className={style.wrapper__select}>
             <p>Select your position</p>
