@@ -3,9 +3,15 @@ import style from "./Promo.module.scss";
 import backPromo from "./../../images/pexels-alexandr-podvalny-1227513.jpeg";
 import Button from "../Elements/Button";
 
-const Promo: FC<{refs: any}> = ({refs}) => {
+const Promo: FC<{ isSignedUp: boolean; refs: any }> = ({
+    isSignedUp,
+    refs,
+}) => {
     function scrollToSignForm() {
-        refs.signComponent.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        refs.signComponent.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+        });
     }
     return (
         <div className={style.wrapper}>
@@ -21,9 +27,11 @@ const Promo: FC<{refs: any}> = ({refs}) => {
                     excited to learn, as the world of Front-End Development
                     keeps evolving.
                 </p>
-                <Button
-                onClick={scrollToSignForm}
-                >Sign up</Button>
+                {isSignedUp ? (
+                    ""
+                ) : (
+                    <Button onClick={scrollToSignForm}>Sign up</Button>
+                )}
             </div>
         </div>
     );

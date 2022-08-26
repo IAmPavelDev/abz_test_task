@@ -6,22 +6,25 @@ import Loader from "../Elements/Loader";
 import { GetUsers } from "../../server/GetUsers";
 import Button from "../Elements/Button";
 
-const Users: FC<{ reference: any }> = ({ reference }) => {
+const actionWidth = () => {
+    return window.innerWidth > 900
+        ? "desktop"
+        : window.innerWidth <= 900 && window.innerWidth >= 601
+        ? "tablet"
+        : "mobile";
+};
+
+const Users: FC<{ isSignedUp: boolean; reference: any }> = ({
+    isSignedUp,
+    reference,
+}) => {
     const [usersList, setUsersList] = useState<ReactElement[]>([]);
     const [isLoader, setIsLoader] = useState(true);
+    const [widthAdaptive, setWidthAdaptive] = useState(actionWidth());
     const loadedPages = useRef(0);
     const neededPage = useRef(1);
     const maxPossiblePages = useRef(1);
     const usersComponentRef = useRef(null);
-    const actionWidth = () => {
-        return window.innerWidth > 900
-            ? "desktop"
-            : window.innerWidth <= 900 && window.innerWidth >= 601
-            ? "tablet"
-            : "mobile";
-    };
-
-    const [widthAdaptive, setWidthAdaptive] = useState(actionWidth());
 
     useEffect(() => {
         (async function () {
@@ -32,6 +35,14 @@ const Users: FC<{ reference: any }> = ({ reference }) => {
         });
         reference({ ref: usersComponentRef, name: "usersComponent" });
     });
+
+    useEffect(() => {
+        loadedPages.current = 0;
+        neededPage.current = 1;
+        maxPossiblePages.current = 1;
+        setUsersList([]);
+        setIsLoader(true);
+    }, [isSignedUp]);
 
     async function getListOfUsers(argu: Number) {
         if (

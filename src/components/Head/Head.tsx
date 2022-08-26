@@ -2,7 +2,7 @@ import { FC } from "react";
 import style from "./Head.module.scss";
 import logo from "./../../images/logo.svg";
 import Button from "../Elements/Button";
-const Head: FC<{ refs: any }> = ({ refs }) => {
+const Head: FC<{ isSignedUp: boolean, refs: any }> = ({isSignedUp, refs }) => {
     function scrollToSignForm() {
         refs.signComponent.current.scrollIntoView({
             behavior: "smooth",
@@ -10,6 +10,7 @@ const Head: FC<{ refs: any }> = ({ refs }) => {
         });
     }
     function scrollToUsersForm() {
+        console.log(refs);
         refs.usersComponent.current.scrollIntoView({
             behavior: "smooth",
             block: "start",
@@ -25,7 +26,7 @@ const Head: FC<{ refs: any }> = ({ refs }) => {
                 />
                 <div className={style.wrapper__buttons}>
                     <Button onClick={scrollToUsersForm}>Users</Button>
-                    <Button onClick={scrollToSignForm}>Sign up</Button>
+                    {isSignedUp ? "" : <Button onClick={scrollToSignForm}>Sign up</Button>}
                 </div>
             </div>
         </div>

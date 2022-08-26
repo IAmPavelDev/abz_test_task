@@ -23,7 +23,6 @@ const initialState: State = {
     previewPhoto: "",
     isValid: false,
     errorFields: [],
-    isSignedUp: false,
     isLoading: false,
 };
 
@@ -69,14 +68,10 @@ function formReducer(state: State, action: Action) {
                     }
                 }
             }
-            console.log(stateChanges);
             if (stateChanges.length) {
                 return { ...state, errorFields: stateChanges, isValid: false };
             }
             return { ...state, errorFields: [], isValid: true };
-        }
-        case "setIsSignedUp": {
-            return { ...state, setIsSignedUp: action.payload };
         }
         case "isLoading": {
             return { ...state, isLoading: action.payload };
@@ -86,12 +81,19 @@ function formReducer(state: State, action: Action) {
     }
 }
 
-const SignUp: FC<{ reference: any }> = ({ reference }) => {
+const SignUp: FC<{ isSignedUp: boolean, setIsSignedUp: (arg0: boolean) => void; reference: any }> = ({
+    isSignedUp,
+    setIsSignedUp,
+    reference,
+}) => {
     const signComponentRef = useRef<HTMLDivElement>(null);
     const [state, dispatch] = useReducer(formReducer, initialState);
 
     useEffect(() => {
         reference({ ref: signComponentRef, name: "signComponent" });
+        return () => {
+            URL.revokeObjectURL(state.photo as string);
+        };
     });
 
     useEffect(() => {
@@ -177,8 +179,8 @@ const SignUp: FC<{ reference: any }> = ({ reference }) => {
             success: boolean;
         } = await SignUpServer(state);
         dispatch({ type: "isLoading", payload: false });
-        if (res) {
-            dispatch({ type: "setIsSignedUp", payload: res?.success });
+        if (res?.success) {
+            setIsSignedUp(true);
         }
     }
 
@@ -188,7 +190,7 @@ const SignUp: FC<{ reference: any }> = ({ reference }) => {
                 <Loader />
             ) : (
                 <>
-                    {state.isSignedUp ? (
+                    {isSignedUp ? (
                         <>
                             <p>User successfully registered</p>
                             <img

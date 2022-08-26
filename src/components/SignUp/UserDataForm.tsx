@@ -19,9 +19,12 @@ const UserDataForm: React.FC<{
         setIsError([...state.errorFields]);
     }, [state.errorFields]);
 
-    function selected(_e: any) {
-        if (!isSelected.includes(_e.target?.id)) {
-            setIsSelected((prev) => [...prev, _e.target?.id]);
+    function selected(e: React.SyntheticEvent<HTMLInputElement, Event>) {
+        if (!isSelected.includes((e.target as HTMLInputElement).id)) {
+            setIsSelected((prev) => [
+                ...prev,
+                (e.target as HTMLInputElement).id,
+            ]);
         }
     }
 
@@ -37,7 +40,7 @@ const UserDataForm: React.FC<{
                         : style.wrapper__form__name
                 }
                 type="text"
-                onSelect={(e) => selected(e)}
+                onBlur={(e) => selected(e)}
                 placeholder="Your name"
                 onChange={(e) => textAndSelectAction(e)}
             />
@@ -49,7 +52,11 @@ const UserDataForm: React.FC<{
                 }
                 htmlFor="name"
             >
-                name
+                {
+                    isError.includes("name") && isSelected.includes("name")
+                        ? <>Invalid name</>
+                        : ""
+                }
             </label>
             <input
                 id="email"
@@ -62,7 +69,7 @@ const UserDataForm: React.FC<{
                 }
                 type="email"
                 placeholder="Email"
-                onSelect={(e) => selected(e)}
+                onBlur={(e) => selected(e)}
                 onChange={(e) => textAndSelectAction(e)}
             />
             <label
@@ -73,7 +80,11 @@ const UserDataForm: React.FC<{
                 }
                 htmlFor="email"
             >
-                email
+                {
+                    isError.includes("email") && isSelected.includes("email")
+                        ? <>Invalid E-mail</>
+                        : ""
+                }
             </label>
             <PhoneInput
                 country="UA"
@@ -87,7 +98,9 @@ const UserDataForm: React.FC<{
                 }
                 type="tel"
                 placeholder="Phone"
-                onSelect={(e: any) => selected(e)}
+                onBlur={(e: React.SyntheticEvent<HTMLInputElement, Event>) =>
+                    selected(e)
+                }
                 label={ua}
                 value={state.phone}
                 onChange={(e) => addNumberAction(e)}
@@ -100,7 +113,11 @@ const UserDataForm: React.FC<{
                 }
                 htmlFor="phone"
             >
-                +38 (XXX) XXX - XX - XX
+                {
+                    isError.includes("phone") && isSelected.includes("phone")
+                        ? <>Invalid phone number</>
+                        : <>+38 (XXX) XXX - XX - XX</>
+                }
             </label>
         </div>
     );

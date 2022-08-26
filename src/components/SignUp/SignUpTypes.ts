@@ -8,7 +8,6 @@ export interface State {
     previewPhoto: string;
     isValid: boolean;
     errorFields: Array<string>;
-    isSignedUp: boolean;
     isLoading: boolean;
 }
 
